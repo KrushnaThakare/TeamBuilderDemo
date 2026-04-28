@@ -3,7 +3,7 @@ export function Header({ canDownload, isOnline, loading, onDownload, onReset }) 
     <header className="app-header">
       <div>
         <p className="eyebrow">Live selection room</p>
-        <h1>Cricket Team Builder</h1>
+        <h1>SPCC Morning Battle Grounds</h1>
         <p className="header-copy">Pick squads, set captains, and sync the match card across every device.</p>
       </div>
       <div className="header-actions">

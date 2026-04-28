@@ -1,184 +1,213 @@
+const SHEET_WIDTH = 1080;
+const PADDING = 54;
+const CARD_GAP = 28;
+const CARD_WIDTH = SHEET_WIDTH - PADDING * 2;
+const ROW_HEIGHT = 58;
+const FONT_FAMILY = 'Inter, Arial, sans-serif';
+
 const getCaptainName = (captain) => captain?.name || 'Not selected';
 
-const playerRows = (players, captainId) =>
-  players
-    .map(
-      (player, index) => `
-        <li>
-          <span class="number">${index + 1}</span>
-          <span>${player.name}</span>
-          ${player.id === captainId ? '<strong>Captain</strong>' : ''}
-        </li>
-      `,
-    )
-    .join('');
+const roundRect = (context, x, y, width, height, radius) => {
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.arcTo(x + width, y, x + width, y + height, radius);
+  context.arcTo(x + width, y + height, x, y + height, radius);
+  context.arcTo(x, y + height, x, y, radius);
+  context.arcTo(x, y, x + width, y, radius);
+  context.closePath();
+};
 
-const teamCard = (title, players, captain, accent) => `
-  <section class="team-card" style="--accent: ${accent}">
-    <div class="team-head">
-      <div>
-        <p>Squad</p>
-        <h2>${title}</h2>
-      </div>
-      <span>${players.length} Players</span>
-    </div>
-    <div class="captain">Captain: <strong>${getCaptainName(captain)}</strong></div>
-    <ol>
-      ${
-        players.length
-          ? playerRows(players, captain?.id)
-          : '<li class="empty">No players selected</li>'
-      }
-    </ol>
-  </section>
-`;
+const drawText = (context, text, x, y, options = {}) => {
+  const {
+    color = '#f7fff7',
+    font = `700 28px ${FONT_FAMILY}`,
+    maxWidth,
+    textAlign = 'left',
+  } = options;
 
-const buildTeamsHtml = ({ teamA, teamB }) => `
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Cricket Team Builder - Teams</title>
-    <style>
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        min-width: 320px;
-        color: #f7fff7;
-        background: linear-gradient(135deg, #071b12, #102a1f 55%, #14213d);
-        font-family: Inter, Arial, sans-serif;
-      }
-      .sheet {
-        width: min(920px, 100%);
-        margin: 0 auto;
-        padding: 20px;
-      }
-      header {
-        padding: 22px;
-        border-radius: 28px;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.14);
-      }
-      .eyebrow,
-      .team-head p {
-        margin: 0 0 6px;
-        color: #9df95a;
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: 0.13em;
-        text-transform: uppercase;
-      }
-      h1,
-      h2 {
-        margin: 0;
-      }
-      h1 {
-        font-size: clamp(30px, 9vw, 56px);
-        line-height: 0.95;
-      }
-      .teams {
-        display: grid;
-        gap: 16px;
-        margin-top: 16px;
-      }
-      .team-card {
-        padding: 18px;
-        border-top: 6px solid var(--accent);
-        border-radius: 26px;
-        background: rgba(7, 30, 20, 0.86);
-        border-right: 1px solid rgba(255, 255, 255, 0.12);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-        border-left: 1px solid rgba(255, 255, 255, 0.12);
-      }
-      .team-head {
-        display: flex;
-        align-items: start;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .team-head span,
-      .captain {
-        color: #d9f8e1;
-        font-weight: 800;
-      }
-      .captain {
-        margin: 16px 0;
-        padding: 12px;
-        border-radius: 18px;
-        color: #082015;
-        background: linear-gradient(135deg, #c6ff4f, #4efc93);
-      }
-      ol {
-        display: grid;
-        gap: 10px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-      }
-      li {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: center;
-        gap: 10px;
-        padding: 12px;
-        border-radius: 18px;
-        background: rgba(255, 255, 255, 0.08);
-        font-weight: 800;
-      }
-      li.empty {
-        display: block;
-        color: #bad7c1;
-        text-align: center;
-      }
-      .number {
-        display: inline-grid;
-        width: 30px;
-        height: 30px;
-        place-items: center;
-        border-radius: 50%;
-        color: #082015;
-        background: var(--accent);
-      }
-      li strong {
-        color: #ffd166;
-        font-size: 12px;
-        text-transform: uppercase;
-      }
-      @media (min-width: 720px) {
-        .sheet { padding: 32px; }
-        .teams { grid-template-columns: 1fr 1fr; }
-      }
-      @media print {
-        body { background: #071b12; }
-      }
-    </style>
-  </head>
-  <body>
-    <main class="sheet">
-      <header>
-        <p class="eyebrow">Final team sheet</p>
-        <h1>Cricket Team Builder</h1>
-      </header>
-      <div class="teams">
-        ${teamCard('Team A', teamA.players, teamA.captain, '#9df95a')}
-        ${teamCard('Team B', teamB.players, teamB.captain, '#ffd166')}
-      </div>
-    </main>
-  </body>
-</html>
-`;
+  context.fillStyle = color;
+  context.font = font;
+  context.textAlign = textAlign;
+  context.textBaseline = 'top';
+  context.fillText(text, x, y, maxWidth);
+};
 
-export function downloadTeams(teamData) {
-  const html = buildTeamsHtml(teamData);
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
+const truncateText = (context, text, maxWidth) => {
+  if (context.measureText(text).width <= maxWidth) {
+    return text;
+  }
+
+  let truncated = text;
+  while (truncated.length > 0 && context.measureText(`${truncated}...`).width > maxWidth) {
+    truncated = truncated.slice(0, -1);
+  }
+
+  return `${truncated}...`;
+};
+
+const drawPlayerRow = (context, player, index, captainId, x, y, accent) => {
+  roundRect(context, x, y, CARD_WIDTH - 36, ROW_HEIGHT, 18);
+  context.fillStyle = 'rgba(255, 255, 255, 0.09)';
+  context.fill();
+
+  context.beginPath();
+  context.arc(x + 31, y + ROW_HEIGHT / 2, 18, 0, Math.PI * 2);
+  context.fillStyle = accent;
+  context.fill();
+
+  drawText(context, String(index + 1), x + 31, y + 17, {
+    color: '#082015',
+    font: `800 18px ${FONT_FAMILY}`,
+    textAlign: 'center',
+  });
+
+  const isCaptain = player.id === captainId;
+  const nameMaxWidth = isCaptain ? CARD_WIDTH - 250 : CARD_WIDTH - 140;
+  const name = truncateText(context, player.name, nameMaxWidth);
+
+  drawText(context, name, x + 64, y + 16, {
+    font: `800 24px ${FONT_FAMILY}`,
+    maxWidth: nameMaxWidth,
+  });
+
+  if (isCaptain) {
+    drawText(context, 'CAPTAIN', x + CARD_WIDTH - 132, y + 19, {
+      color: '#ffd166',
+      font: `800 16px ${FONT_FAMILY}`,
+      textAlign: 'right',
+    });
+  }
+};
+
+const getTeamHeight = (players) => 176 + Math.max(players.length, 1) * (ROW_HEIGHT + 12);
+
+const drawTeamCard = (context, title, team, x, y, accent) => {
+  const { captain, players } = team;
+  const height = getTeamHeight(players);
+
+  roundRect(context, x, y, CARD_WIDTH, height, 30);
+  context.fillStyle = 'rgba(7, 30, 20, 0.9)';
+  context.fill();
+  context.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+  context.lineWidth = 2;
+  context.stroke();
+
+  roundRect(context, x, y, CARD_WIDTH, 10, 5);
+  context.fillStyle = accent;
+  context.fill();
+
+  drawText(context, 'SQUAD', x + 28, y + 28, {
+    color: '#9df95a',
+    font: `800 16px ${FONT_FAMILY}`,
+  });
+  drawText(context, title, x + 28, y + 52, {
+    font: `800 42px ${FONT_FAMILY}`,
+  });
+  drawText(context, `${players.length} players`, x + CARD_WIDTH - 28, y + 38, {
+    color: '#d9f8e1',
+    font: `800 22px ${FONT_FAMILY}`,
+    textAlign: 'right',
+  });
+
+  const captainGradient = context.createLinearGradient(x + 28, y + 108, x + CARD_WIDTH - 28, y + 108);
+  captainGradient.addColorStop(0, '#c6ff4f');
+  captainGradient.addColorStop(1, '#4efc93');
+  roundRect(context, x + 28, y + 106, CARD_WIDTH - 56, 48, 18);
+  context.fillStyle = captainGradient;
+  context.fill();
+  drawText(context, `Captain: ${getCaptainName(captain)}`, x + 48, y + 119, {
+    color: '#082015',
+    font: `800 22px ${FONT_FAMILY}`,
+    maxWidth: CARD_WIDTH - 96,
+  });
+
+  if (players.length === 0) {
+    roundRect(context, x + 18, y + 174, CARD_WIDTH - 36, ROW_HEIGHT, 18);
+    context.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    context.fill();
+    drawText(context, 'No players selected', x + CARD_WIDTH / 2, y + 191, {
+      color: '#bad7c1',
+      font: `800 22px ${FONT_FAMILY}`,
+      textAlign: 'center',
+    });
+    return height;
+  }
+
+  players.forEach((player, index) => {
+    drawPlayerRow(context, player, index, captain?.id, x + 18, y + 174 + index * (ROW_HEIGHT + 12), accent);
+  });
+
+  return height;
+};
+
+const buildCanvas = ({ teamA, teamB }) => {
+  const teamAHeight = getTeamHeight(teamA.players);
+  const teamBHeight = getTeamHeight(teamB.players);
+  const canvas = document.createElement('canvas');
+  const height = PADDING + 172 + CARD_GAP + teamAHeight + CARD_GAP + teamBHeight + PADDING;
+
+  canvas.width = SHEET_WIDTH;
+  canvas.height = height;
+
+  const context = canvas.getContext('2d');
+  const background = context.createLinearGradient(0, 0, SHEET_WIDTH, height);
+  background.addColorStop(0, '#071b12');
+  background.addColorStop(0.58, '#102a1f');
+  background.addColorStop(1, '#14213d');
+  context.fillStyle = background;
+  context.fillRect(0, 0, SHEET_WIDTH, height);
+
+  context.beginPath();
+  context.arc(SHEET_WIDTH - 95, 75, 92, 0, Math.PI * 2);
+  context.fillStyle = 'rgba(243, 56, 63, 0.28)';
+  context.fill();
+  context.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+  context.lineWidth = 5;
+  context.beginPath();
+  context.moveTo(SHEET_WIDTH - 95, 5);
+  context.lineTo(SHEET_WIDTH - 95, 145);
+  context.stroke();
+
+  roundRect(context, PADDING, PADDING, CARD_WIDTH, 172, 34);
+  context.fillStyle = 'rgba(255, 255, 255, 0.09)';
+  context.fill();
+  context.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  context.lineWidth = 2;
+  context.stroke();
+
+  drawText(context, 'FINAL TEAM SHEET', PADDING + 28, PADDING + 28, {
+    color: '#9df95a',
+    font: `800 18px ${FONT_FAMILY}`,
+  });
+  drawText(context, 'Cricket Team Builder', PADDING + 28, PADDING + 58, {
+    font: `800 58px ${FONT_FAMILY}`,
+    maxWidth: CARD_WIDTH - 56,
+  });
+  drawText(context, new Date().toLocaleDateString(), PADDING + 28, PADDING + 124, {
+    color: '#d9f8e1',
+    font: `700 22px ${FONT_FAMILY}`,
+  });
+
+  const teamAY = PADDING + 172 + CARD_GAP;
+  const teamBY = teamAY + teamAHeight + CARD_GAP;
+  drawTeamCard(context, 'Team A', teamA, PADDING, teamAY, '#9df95a');
+  drawTeamCard(context, 'Team B', teamB, PADDING, teamBY, '#ffd166');
+
+  return canvas;
+};
+
+export async function downloadTeams(teamData) {
+  if (document.fonts?.ready) {
+    await document.fonts.ready;
+  }
+
+  const canvas = buildCanvas(teamData);
+  const url = canvas.toDataURL('image/jpeg', 0.95);
   const link = document.createElement('a');
 
   link.href = url;
-  link.download = `cricket-teams-${new Date().toISOString().slice(0, 10)}.html`;
+  link.download = `cricket-teams-${new Date().toISOString().slice(0, 10)}.jpg`;
   document.body.appendChild(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(url);
 }

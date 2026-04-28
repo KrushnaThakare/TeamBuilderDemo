@@ -156,12 +156,16 @@ export function useMatchRoom() {
   };
 
   const addPlayer = async (player) => {
+    const name = player.name.trim();
+    const photoUrl =
+      player.photo?.trim() ||
+      player.photoUrl?.trim() ||
+      `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(name)}`;
     const newPlayer = {
       id: crypto.randomUUID(),
-      name: player.name.trim(),
-      photoUrl:
-        player.photoUrl.trim() ||
-        `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(player.name.trim())}`,
+      name,
+      photo: photoUrl,
+      photoUrl,
     };
 
     if (!refs) {

@@ -5,6 +5,7 @@ Mobile-first real-time cricket team builder built with React, Vite, and Firebase
 ## Features
 
 - Dynamic player list with photo URLs
+- Optional player image upload with Firebase Storage
 - Search bar with live autocomplete suggestions
 - Team A and Team B selection with captain assignment
 - Duplicate-safe player selection and team swapping
@@ -53,6 +54,7 @@ The app stores one shared match room at:
 - `matches/default/players`
 
 Firestore rules should allow the intended users to read and write these documents.
+Firebase Storage rules should allow the intended users to upload and read files under `players/`.
 
 ## Netlify
 

@@ -5,6 +5,7 @@ import { PlayerSearch } from './components/PlayerSearch';
 import { ScoreCard } from './components/ScoreCard';
 import { TeamSection } from './components/TeamSection';
 import { useMatchRoom } from './hooks/useMatchRoom';
+import { downloadTeams } from './utils/downloadTeams';
 import './styles.css';
 
 function App() {
@@ -42,10 +43,31 @@ function App() {
 
   const teamAPlayers = match.teamA.map((id) => playerMap.get(id)).filter(Boolean);
   const teamBPlayers = match.teamB.map((id) => playerMap.get(id)).filter(Boolean);
+  const captainA = playerMap.get(match.captains.teamA);
+  const captainB = playerMap.get(match.captains.teamB);
+
+  const handleDownloadTeams = () => {
+    downloadTeams({
+      teamA: {
+        captain: captainA,
+        players: teamAPlayers,
+      },
+      teamB: {
+        captain: captainB,
+        players: teamBPlayers,
+      },
+    });
+  };
 
   return (
     <div className="app-shell">
-      <Header isOnline={isFirebaseConfigured} loading={loading} onReset={resetMatch} />
+      <Header
+        canDownload={teamAPlayers.length > 0 || teamBPlayers.length > 0}
+        isOnline={isFirebaseConfigured}
+        loading={loading}
+        onDownload={handleDownloadTeams}
+        onReset={resetMatch}
+      />
 
       {error && <div className="notice notice-error">{error}</div>}
       {!isFirebaseConfigured && (
@@ -74,10 +96,12 @@ function App() {
             title="Team A"
             teamKey="teamA"
             accent="green"
+            availablePlayers={availablePlayers}
             players={teamAPlayers}
             captainId={match.captains.teamA}
             onCaptainChange={updateCaptain}
             onDropPlayer={selectPlayer}
+            onSelectPlayer={selectPlayer}
             onRemove={removePlayerFromTeam}
             onSwap={swapPlayer}
           />
@@ -85,10 +109,12 @@ function App() {
             title="Team B"
             teamKey="teamB"
             accent="gold"
+            availablePlayers={availablePlayers}
             players={teamBPlayers}
             captainId={match.captains.teamB}
             onCaptainChange={updateCaptain}
             onDropPlayer={selectPlayer}
+            onSelectPlayer={selectPlayer}
             onRemove={removePlayerFromTeam}
             onSwap={swapPlayer}
           />

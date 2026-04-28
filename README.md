@@ -8,7 +8,9 @@ Mobile-first real-time cricket team builder built with React, Vite, and Firebase
 - Optional player image upload with Firebase Storage
 - Search bar with live autocomplete suggestions
 - Team A and Team B selection with captain assignment
+- Team-local autocomplete search boxes for fast player selection
 - Duplicate-safe player selection and team swapping
+- Downloadable mobile-friendly team sheet with captains and player lists
 - Real-time Firestore sync across devices
 - Match reset that clears teams, captains, and scores
 - Simple two-innings scorecard with winner calculation
@@ -55,6 +57,24 @@ The app stores one shared match room at:
 
 Firestore rules should allow the intended users to read and write these documents.
 Firebase Storage rules should allow the intended users to upload and read files under `players/`.
+
+For quick local testing, Firebase Storage must be enabled in the Firebase Console and your Storage
+rules must permit image uploads. Example public test rules:
+
+```text
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /players/{fileName} {
+      allow read: if true;
+      allow write: if request.resource != null
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
+```
+
+Lock these rules down with Firebase Authentication before using the app with private data.
 
 ## Netlify
 

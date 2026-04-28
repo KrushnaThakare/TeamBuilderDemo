@@ -1,4 +1,4 @@
-export function Header({ isOnline, loading, onReset }) {
+export function Header({ canDownload, isOnline, loading, onDownload, onReset }) {
   return (
     <header className="app-header">
       <div>
@@ -11,6 +11,9 @@ export function Header({ isOnline, loading, onReset }) {
           <span aria-hidden="true" />
           {loading ? 'Syncing...' : isOnline ? 'Live Sync' : 'Setup Needed'}
         </span>
+        <button className="primary-button" type="button" onClick={onDownload} disabled={!canDownload}>
+          Download Teams
+        </button>
         <button className="danger-button" type="button" onClick={onReset}>
           Reset Match
         </button>

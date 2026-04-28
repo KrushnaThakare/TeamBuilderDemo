@@ -8,13 +8,15 @@ export function PlayerCard({
   player,
   selected = false,
 }) {
+  const photoSource = player.photoUrl || player.photo;
+
   return (
     <article
       className={`player-card ${selected ? 'player-card--selected' : ''}`}
       draggable={draggable}
       onDragStart={onDragStart}
     >
-      <img src={player.photoUrl} alt={player.name} className="player-card__avatar" loading="lazy" />
+      <img src={photoSource} alt={player.name} className="player-card__avatar" loading="lazy" />
       <div>
         <h3>{player.name}</h3>
         {badge ? <span>{badge}</span> : null}

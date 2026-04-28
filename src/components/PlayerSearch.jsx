@@ -1,9 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { isFirebaseConfigured } from '../firebase';
+import { uploadPlayerPhoto } from '../utils/uploadPlayerPhoto';
 
 export function PlayerSearch({ players, onAddPlayer, onSelect }) {
   const [query, setQuery] = useState('');
   const [draftTeam, setDraftTeam] = useState('teamA');
-  const [newPlayer, setNewPlayer] = useState({ name: '', photoUrl: '' });
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState('');
+  const [photoError, setPhotoError] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   const normalizedQuery = query.trim().toLowerCase();
 
   const suggestions = useMemo(() => {
@@ -21,15 +27,69 @@ export function PlayerSearch({ players, onAddPlayer, onSelect }) {
     setQuery('');
   };
 
-  const handleAddPlayer = async (event) => {
-    event.preventDefault();
-    if (!newPlayer.name.trim()) {
+  const resetPhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview('');
+    setPhotoError('');
+  };
+
+  const handlePhotoChange = (event) => {
+    const file = event.target.files?.[0];
+    setPhotoError('');
+
+    if (!file) {
+      resetPhoto();
       return;
     }
 
-    await onAddPlayer(newPlayer);
-    setNewPlayer({ name: '', photoUrl: '' });
+    if (!file.type.startsWith('image/')) {
+      resetPhoto();
+      setPhotoError('Please choose an image file.');
+      return;
+    }
+
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+    }
+
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
   };
+
+  const handleAddPlayer = async (event) => {
+    event.preventDefault();
+    if (!newPlayerName.trim() || isUploading) {
+      return;
+    }
+
+    setPhotoError('');
+    setIsUploading(true);
+
+    try {
+      const photoUrl = photoFile && isFirebaseConfigured ? await uploadPlayerPhoto(photoFile) : '';
+
+      await onAddPlayer({
+        name: newPlayerName,
+        photo: photoUrl,
+        photoUrl,
+      });
+      setNewPlayerName('');
+      resetPhoto();
+      event.currentTarget.reset();
+    } catch (error) {
+      setPhotoError(error.message || 'Photo upload failed. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
 
   return (
     <section className="card panel player-search">
@@ -82,7 +142,7 @@ export function PlayerSearch({ players, onAddPlayer, onSelect }) {
               type="button"
               onClick={() => handleSelect(player.id)}
             >
-              <img src={player.photoUrl} alt="" />
+              <img src={player.photoUrl || player.photo} alt="" />
               <span>
                 {player.name}
                 <small>Add to {draftTeam === 'teamA' ? 'Team A' : 'Team B'}</small>
@@ -100,23 +160,24 @@ export function PlayerSearch({ players, onAddPlayer, onSelect }) {
           className="input"
           id="new-player-name"
           type="text"
-          value={newPlayer.name}
-          onChange={(event) => setNewPlayer((current) => ({ ...current, name: event.target.value }))}
+          value={newPlayerName}
+          onChange={(event) => setNewPlayerName(event.target.value)}
           placeholder="New player name"
+          required
         />
-        <label className="sr-only" htmlFor="new-player-photo">
-          New player photo URL
-        </label>
-        <input
-          className="input"
-          id="new-player-photo"
-          type="url"
-          value={newPlayer.photoUrl}
-          onChange={(event) => setNewPlayer((current) => ({ ...current, photoUrl: event.target.value }))}
-          placeholder="Photo URL (optional)"
-        />
-        <button className="primary-button" type="submit">
-          Add Player
+        <div className="photo-upload-field">
+          <label htmlFor="new-player-photo">
+            Photo upload <span>(optional)</span>
+          </label>
+          <input id="new-player-photo" type="file" accept="image/*" onChange={handlePhotoChange} />
+          {photoPreview && <img className="photo-preview" src={photoPreview} alt="Selected player preview" />}
+          {photoError && <small className="form-error">{photoError}</small>}
+          {!isFirebaseConfigured && (
+            <small className="form-hint">Configure Firebase to upload images; local preview uses default avatars.</small>
+          )}
+        </div>
+        <button className="primary-button" type="submit" disabled={!newPlayerName.trim() || isUploading}>
+          {isUploading ? 'Uploading...' : 'Add Player'}
         </button>
       </form>
     </section>

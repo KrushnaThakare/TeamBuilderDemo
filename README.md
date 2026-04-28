@@ -8,7 +8,9 @@ Mobile-first real-time cricket team builder built with React, Vite, and Firebase
 - Optional player image upload with Firebase Storage
 - Search bar with live autocomplete suggestions
 - Team A and Team B selection with captain assignment
+- Team-local autocomplete search boxes for fast player selection
 - Duplicate-safe player selection and team swapping
+- Downloadable mobile-friendly team sheet with captains and player lists
 - Real-time Firestore sync across devices
 - Match reset that clears teams, captains, and scores
 - Simple two-innings scorecard with winner calculation

@@ -1,18 +1,33 @@
+import { useMemo, useState } from 'react';
 import { PlayerCard } from './PlayerCard';
 
 export function TeamSection({
   accent,
+  availablePlayers,
   captainId,
   onCaptainChange,
   onDropPlayer,
+  onSelectPlayer,
   onRemove,
   onSwap,
   players,
   teamKey,
   title,
 }) {
+  const [searchQuery, setSearchQuery] = useState('');
   const otherTeam = teamKey === 'teamA' ? 'teamB' : 'teamA';
   const teamColor = accent === 'gold' ? '#ffd166' : '#9df95a';
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const suggestions = useMemo(() => {
+    if (!normalizedQuery) {
+      return [];
+    }
+
+    return availablePlayers
+      .filter((player) => player.name.toLowerCase().includes(normalizedQuery))
+      .slice(0, 6);
+  }, [availablePlayers, normalizedQuery]);
 
   const handleDrop = (event) => {
     event.preventDefault();
@@ -21,6 +36,11 @@ export function TeamSection({
     if (playerId) {
       onDropPlayer(teamKey, playerId);
     }
+  };
+
+  const handleSelect = (playerId) => {
+    onSelectPlayer(teamKey, playerId);
+    setSearchQuery('');
   };
 
   return (
@@ -54,6 +74,35 @@ export function TeamSection({
           </option>
         ))}
       </select>
+
+      <div className="team-player-search">
+        <label className="field-label" htmlFor={`${teamKey}-player-search`}>
+          Add player to {title}
+        </label>
+        <input
+          className="input"
+          id={`${teamKey}-player-search`}
+          type="search"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder={`Search pool for ${title}...`}
+          autoComplete="off"
+        />
+        {normalizedQuery && (
+          <div className="team-suggestions" role="listbox" aria-label={`${title} player suggestions`}>
+            {suggestions.length > 0 ? (
+              suggestions.map((player) => (
+                <button key={player.id} type="button" onClick={() => handleSelect(player.id)}>
+                  <img src={player.photoUrl || player.photo} alt="" />
+                  <span>{player.name}</span>
+                </button>
+              ))
+            ) : (
+              <p>No matching available players.</p>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="team-list">
         {players.length === 0 ? (

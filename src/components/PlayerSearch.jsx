@@ -77,7 +77,10 @@ export function PlayerSearch({ players, onAddPlayer, onSelect }) {
       resetPhoto();
       event.currentTarget.reset();
     } catch (error) {
-      setPhotoError(error.message || 'Photo upload failed. Please try again.');
+      setPhotoError(
+        error.message ||
+          'Photo upload failed. Check Firebase Storage is enabled and its rules allow uploads.',
+      );
     } finally {
       setIsUploading(false);
     }

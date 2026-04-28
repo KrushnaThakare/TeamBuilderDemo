@@ -56,6 +56,24 @@ The app stores one shared match room at:
 Firestore rules should allow the intended users to read and write these documents.
 Firebase Storage rules should allow the intended users to upload and read files under `players/`.
 
+For quick local testing, Firebase Storage must be enabled in the Firebase Console and your Storage
+rules must permit image uploads. Example public test rules:
+
+```text
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /players/{fileName} {
+      allow read: if true;
+      allow write: if request.resource != null
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
+```
+
+Lock these rules down with Firebase Authentication before using the app with private data.
+
 ## Netlify
 
 Use the following build settings:

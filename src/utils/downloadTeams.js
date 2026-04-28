@@ -179,7 +179,7 @@ const buildCanvas = ({ teamA, teamB }) => {
     color: '#9df95a',
     font: `800 18px ${FONT_FAMILY}`,
   });
-  drawText(context, 'Cricket Team Builder', PADDING + 28, PADDING + 58, {
+  drawText(context, 'SPCC Teams', PADDING + 28, PADDING + 58, {
     font: `800 58px ${FONT_FAMILY}`,
     maxWidth: CARD_WIDTH - 56,
   });
